@@ -11,10 +11,11 @@ import re
 import sys
 import zlib
 
-argsubparser = argparse.add_subparsers(title = "Commands",dest = "command")
-argsubparser.required = True
+argparser = argparse.ArgumentParser(description = "My own version control")
+argsubparser = argparse.add_subparsers(title = "Commands",dest = "command") #subcommands
+argsubparser.required = True #with these we require the subcommand during use
 
-
+#Bridge functions
 def main(argv=sys.argv[1:]):
     args = argparser.parse_args(argv)
     match args.command:
