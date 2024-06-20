@@ -5,9 +5,16 @@ I will be following the [WyaG book](https://wyag.thb.lt/).
 Since my system is on Windows I'll also add a Dockerfile to do the tests.
 To try it yourself, once you have cloned the repo on your device, you run it with the image I will use.
 
-Once you've entered your container run this line to make `wyag` executable
+Then run 
 
 ```
-$ chmod +x wyag
+$ Docker build image -t . .
+$ Docker run -it My-own-git bash
 ```
+Then run 
+
+```
+$ python wyag %command
+```
+and choose the command you want to try
 
