@@ -1,15 +1,19 @@
-import argparse
-import collections
-import configparser
+import argparse #This is for making CLI commands
+import collections #We'll need OrderedDict from this one
+import configparser #This helps us to build a structure similar to Microsoft Windows INI files
 from datetime import datetime
-import grp , pwd
-from fnmatch import fnmatch
-import hashlib
+import grp , pwd 
+from fnmatch import fnmatch #This helps us support .gitignore 
+import hashlib #This provides us the SHA-1 function
 from math import ceil 
 import os 
 import re
 import sys
 import zlib
+
+argsubparser = argparse.add_subparsers(title = "Commands",dest = "command")
+argsubparser.required = True
+
 
 def main(argv=sys.argv[1:]):
     args = argparser.parse_args(argv)
