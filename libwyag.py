@@ -44,7 +44,7 @@ class GitRepository (object):
     gitdir = None
     conf = None
 
-    #Constructor
+    #Repo Constructor
     def __init__(self, path, force=False):
         self.worktree = path
         self.gitdir = os.path.join(path, ".git")
@@ -65,6 +65,8 @@ class GitRepository (object):
             vers = int(self.conf.get("core", "repositoryformatversion"))
             if vers != 0:
                 raise Exception("Unsupported repositoryformatversion %s" % vers)
+            
+    
         
         
 
