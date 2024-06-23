@@ -15,6 +15,9 @@ argparser = argparse.ArgumentParser(description = "My own version control")
 argsubparser = argparse.add_subparsers(title = "Commands",dest = "command") #subcommands
 argsubparser.required = True #with these we require the subcommand during use
 
+argsp = argsubparser.add_parser("init", help = "Initialize a new empty repository")
+argsp.add_argument("path", metavar = "directory", nargs = "?", default = ".", help = "Where to create the repository")
+
 #Bridge functions
 def main(argv=sys.argv[1:]):
     args = argparser.parse_args(argv)
@@ -66,65 +69,78 @@ class GitRepository (object):
             if vers != 0:
                 raise Exception("Unsupported repositoryformatversion %s" % vers)
             
+def repo_path(repo, *path):
+    """Compute path under repo's gitdir."""
+    return os.path.join(repo.gitdir, *path)
     
-    def repo_path(self, repo, *path):
-        """Compute path under repo's gitdir."""
-        return os.path.join(repo.gitdir, *path)
-    
-    def repo_file(self, *path, mkdir=False):
-        """Same as repo_path, but create dirname(*path) if absent."""
-        if self.repo_dir(*path[:-1], mkdir=mkdir):
-            return self.repo_path(*path)
+def repo_file(repo, *path, mkdir=False):
+    """Same as repo_path, but create dirname(*path) if absent."""
+    if repo_dir(repo, *path[:-1], mkdir=mkdir):
+        return repo_path(repo, *path)
         
-    def repo_dir(self, repo, *path, mkdir = False):
-        """Same as repo_path, but mkdir *path if absent mkdir"""
+def repo_dir(repo, *path, mkdir = False):
+    """Same as repo_path, but mkdir *path if absent mkdir"""
 
-        path = self.repo_path(repo, *path)
+    path = repo_path(repo, *path)
 
-        if os.path.exists(path):
-            if (os.path.isdir(path)):
-                return path
-            else:
-                raise Exception("Not a directory %s" % path)
-            
-        if mkdir:
-            os.makedirs(path)
+    if os.path.exists(path):
+        if (os.path.isdir(path)):
             return path
         else:
-            return None
+            raise Exception("Not a directory %s" % path)
+            
+    if mkdir:
+        os.makedirs(path)
+        return path
+    else:
+        return None
         
-    def repo_create(self,path):
-        """Create a new repository at path"""
+def repo_create(path):
+    """Create a new repository at path"""
         
-        repo = GitRepository(path, True)
+    repo = GitRepository(path, True)
 
-        # First, we make sure the path either doesn't exist or is an
-        # empty dir.
+    # First, we make sure the path either doesn't exist or is an
+    # empty dir.
 
-        if os.path.exists(repo.worktree):
-            if not os.path.isdir(repo.worktree):
-                raise Exception ("%s is not a directory!" % path)
-            if os.path.exists(repo.gitdir):
-                raise Exception ("%s is not empty!" % path)
-        else:
-            os.makedirs(repo.worktree)
+    if os.path.exists(repo.worktree):
+        if not os.path.isdir(repo.worktree):
+            raise Exception ("%s is not a directory!" % path)
+        if os.path.exists(repo.gitdir):
+            raise Exception ("%s is not empty!" % path)
+    else:
+        os.makedirs(repo.worktree)
         
-        assert self.repo_dir(repo, "branches", mkdir=True)
-        assert self.repo_dir(repo, "objects", mkdir=True)
-        assert self.repo_dir(repo, "refs", "tags", mkdir=True)
-        assert self.repo_dir(repo, "refs", "heads", mkdir=True)
+    assert repo_dir(repo, "branches", mkdir=True)
+    assert repo_dir(repo, "objects", mkdir=True)
+    assert repo_dir(repo, "refs", "tags", mkdir=True)
+    assert repo_dir(repo, "refs", "heads", mkdir=True)
 
-        # .git/description
-        with open(self.repo_file(repo, "description"), "w") as f:
-            f.write("Unnamed repository; edit this file 'description' to name the repository.\n")
+     # .git/description
+    with open(repo_file(repo, "description"), "w") as f:
+        f.write("Unnamed repository; edit this file 'description' to name the repository.\n")
 
     # .git/HEAD
-        with open(self.repo_file(repo, "HEAD"), "w") as f:
-            f.write("ref: refs/heads/master\n")
+    with open(repo_file(repo, "HEAD"), "w") as f:
+        f.write("ref: refs/heads/master\n")
 
-        with open(self.repo_file(repo, "config"), "w") as f:
-            config = self.repo_default_config()
-            config.write(f)
+    with open(repo_file(repo, "config"), "w") as f:
+        config = repo_default_config()
+        config.write(f)
 
-        return repo
+    return repo
+    
+def repo_default_config():
+    ret = configparser.ConfigParser()
+
+    ret.add_section("core")
+    ret.set("core", "repositoryformatversion", "0")
+    ret.set("core", "filemode", "false")
+    ret.set("core", "bare", "false")
+
+    return ret   
+   
+    
+def cmd_init(args):
+    repo_create(args.path)
         
