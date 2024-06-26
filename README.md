@@ -15,5 +15,9 @@ to make wyag executable, then run
 ```
 wyag init [path]
 ```
+or
+```
+./wyag init [path]
+```
 
 to initialize your repository
